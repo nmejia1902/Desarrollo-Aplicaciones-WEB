@@ -16,7 +16,7 @@ const app = express();
 const PORT = 3000;
 const SECRET_KEY = 'MiClaveSecretaSuperSegura';
 
-// conexión fija sin .env
+// conexión DB
 const DB_CONFIG = {
   host: '127.0.0.1',
   user: 'root',
@@ -28,7 +28,6 @@ const DB_CONFIG = {
 app.use(express.json());
 app.use(cors());
 
-// ------------------- CONEXIÓN A BASE DE DATOS ---------------------
 
 const pool = mysql.createPool(DB_CONFIG);
 
