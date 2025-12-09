@@ -1,15 +1,28 @@
-<header *ngIf="isLoggedIn()">
-    <nav>
-        <ul>
-            <li><a routerLink="/home">Inicio</a></li>
-            <li><a routerLink="/users">Usuarios</a></li>
-            <li><a routerLink="/product">Productos</a></li>
-            <li><a routerLink="/vehiculos">Vehiculos</a></li>
-            <li><a (click)="logout()">Cerrar Sesión</a></li>
-        </ul>
-    </nav>
-</header>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/home">Inicio</a>
 
-<main>
-    <router-outlet></router-outlet>
-</main>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarMain">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link" routerLink="/home">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" routerLink="/users">Usuarios</a></li>
+        <li class="nav-item"><a class="nav-link" routerLink="/product">Productos</a></li>
+        <li class="nav-item"><a class="nav-link" routerLink="/vehiculos">Vehículos</a></li>
+        <li class="nav-item"><a class="nav-link" routerLink="/venta">Registrar Venta</a></li>
+      </ul>
+
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" (click)="logout()">Cerrar Sesión</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- donde se renderizan las rutas -->
+<router-outlet></router-outlet>

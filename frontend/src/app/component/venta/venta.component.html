@@ -1,0 +1,85 @@
+<div class="container my-4">
+  <div class="card shadow-sm">
+    <div class="card-header">
+      <h3 class="mb-0">Registrar Venta</h3>
+    </div>
+
+    <div class="card-body">
+      <!-- Datos cliente -->
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Nombre del Cliente</label>
+          <input class="form-control" type="text" [(ngModel)]="clienteNombre" name="clienteNombre" placeholder="Nombre completo">
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Teléfono</label>
+          <input class="form-control" type="text" [(ngModel)]="clienteTelefono" name="clienteTelefono" placeholder="Teléfono">
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+          <button class="btn btn-outline-primary w-100" type="button" (click)="agregarItem()">+ Agregar línea</button>
+        </div>
+      </div>
+
+      <!-- Tabla de productos -->
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead class="table-light">
+            <tr>
+              <th style="width:50%">Producto</th>
+              <th style="width:12%">Cantidad</th>
+              <th style="width:12%">Precio</th>
+              <th style="width:14%">Subtotal</th>
+              <th style="width:12%"></th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let item of items; let i = index">
+              <td>
+                <select class="form-select" [(ngModel)]="item.productId" name="prod{{i}}">
+                  <option [ngValue]="null">-- Seleccione --</option>
+                  <option *ngFor="let p of productos" [ngValue]="p.id">{{ p.nombre }} (stock: {{ p.stock }})</option>
+                </select>
+              </td>
+
+              <td>
+                <input class="form-control" type="number" min="1" [(ngModel)]="item.quantity" name="qty{{i}}">
+              </td>
+
+              <td>
+                <div>{{ obtenerProducto(item.productId)?.precio | currency:'LPS ': 'symbol' }}</div>
+              </td>
+
+              <td>
+                <div>{{ subtotal(item) | currency:'LPS ': 'symbol' }}</div>
+              </td>
+
+              <td>
+                <button class="btn btn-sm btn-outline-danger" type="button" (click)="quitarItem(i)" [disabled]="items.length===1">X</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Total y mensajes -->
+      <div class="d-flex justify-content-between align-items-center mt-3">
+        <div>
+          <div *ngIf="mensajeError" class="text-danger">{{ mensajeError }}</div>
+          <div *ngIf="mensajeOk" class="text-success">{{ mensajeOk }}</div>
+        </div>
+
+        <div class="text-end">
+          <h5>Total: <strong>{{ total() | currency:'LPS ': 'symbol' }}</strong></h5>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer text-end">
+      <button class="btn btn-secondary me-2" type="button" (click)="items = [{ productId: null, quantity: 1 }]; clienteNombre=''; clienteTelefono='';">Reset</button>
+      <button class="btn btn-primary" type="button" (click)="registrar()">Registrar Venta</button>
+    </div>
+  </div>
+</div>
