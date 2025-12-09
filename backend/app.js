@@ -1,22 +1,14 @@
-// =========================
-//  SISTEMA VETERINARIA API
-//  Backend todo en un solo archivo (corregido)
-// =========================
 
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-
-// ------------------- CONFIGURACIONES ---------------------
-
 const app = express();
 
 const PORT = 3000;
 const SECRET_KEY = 'MiClaveSecretaSuperSegura';
 
-// conexión DB
 const DB_CONFIG = {
   host: '127.0.0.1',
   user: 'root',
@@ -33,14 +25,13 @@ const pool = mysql.createPool(DB_CONFIG);
 (async () => {
   try {
     const conn = await pool.getConnection();
-    console.log('✅ Conexión a MySQL exitosa.');
+    console.log(' Conexión a MySQL exitosa.');
     conn.release();
   } catch (error) {
-    console.log('❌ Error conectando MySQL:', error.message);
+    console.log(' Error conectando MySQL:', error.message);
   }
 })();
 
-// ------------------- MIDDLEWARE AUTH ---------------------
 
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -61,14 +52,12 @@ const authMiddleware = (req, res, next) => {
   });
 };
 
-// ------------------- RUTAS ---------------------
 
-// Ruta de prueba
 app.get('/api/test', (req, res) => {
   res.send('Backend Veterinaria funcionando ✔️');
 });
 
-// 🔹 REGISTRO DE USUARIO
+
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { nombre, correo, password } = req.body;
@@ -77,7 +66,7 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ message: 'nombre, correo y password son requeridos.' });
     }
 
-    // verificar correo duplicado
+
     const [existe] = await pool.query(
       'SELECT id FROM usuarios WHERE correo = ?',
       [correo]
@@ -87,10 +76,10 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(409).json({ message: 'El correo ya está registrado' });
     }
 
-    // hash de contraseña
+
     const hashedPass = await bcrypt.hash(password, 10);
 
-    // insertar usuario
+
     const [result] = await pool.query(
       'INSERT INTO usuarios (nombre, correo, password) VALUES (?, ?, ?)',
       [nombre, correo, hashedPass]
@@ -103,7 +92,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// 🔹 LOGIN
+
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { correo, password } = req.body;
@@ -129,7 +118,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    // generar token
+
     const token = jwt.sign(
       { id: usuario.id, nombre: usuario.nombre, correo: usuario.correo },
       SECRET_KEY,
@@ -151,7 +140,6 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// 🔹 Ruta protegida para pruebas
 app.get('/api/protegido', authMiddleware, (req, res) => {
   res.json({
     message: 'Acceso permitido con token válido.',
@@ -159,9 +147,6 @@ app.get('/api/protegido', authMiddleware, (req, res) => {
   });
 });
 
-// ------------------- RUTAS DE PRODUCTOS Y VEHICULOS ---------------------
-
-// GET productos (público para facilitar pruebas; si quieres lo proteges con authMiddleware)
 app.get('/api/productos', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT id, nombre, precio, stock FROM productos');
@@ -172,7 +157,7 @@ app.get('/api/productos', async (req, res) => {
   }
 });
 
-// POST crear producto (protegido)
+
 app.post('/api/productos', authMiddleware, async (req, res) => {
   try {
     const { nombre, precio, stock } = req.body;
@@ -190,10 +175,10 @@ app.post('/api/productos', authMiddleware, async (req, res) => {
   }
 });
 
-// GET vehiculos (público)
+
 app.get('/api/vehiculos', async (req, res) => {
   try {
-    // ajusta columnas según tu tabla
+ 
     const [rows] = await pool.query('SELECT id, placa, modelo, propietario FROM vehiculos');
     res.json(rows);
   } catch (err) {
@@ -202,9 +187,9 @@ app.get('/api/vehiculos', async (req, res) => {
   }
 });
 
-// ------------------- RUTAS DE VENTAS (REGISTRAR + CONSULTAR FACTURA) ---------------------
 
-// POST registrar venta (protegido)
+
+
 app.post('/api/ventas', authMiddleware, async (req, res) => {
   const { cliente, items } = req.body;
 
@@ -216,14 +201,14 @@ app.post('/api/ventas', authMiddleware, async (req, res) => {
   try {
     await conn.beginTransaction();
 
-    // 1) Crear cliente
+
     const [clienteResult] = await conn.query(
       'INSERT INTO clientes (nombre, telefono) VALUES (?, ?)',
       [cliente.nombre, cliente.telefono || null]
     );
     const id_cliente = clienteResult.insertId;
 
-    // 2) Calcular total, validar stock y preparar detalle
+
     let total = 0;
     const detalles = [];
 
@@ -253,15 +238,15 @@ app.post('/api/ventas', authMiddleware, async (req, res) => {
       });
     }
 
-    // 3) Insertar venta
-    const id_usuario = req.usuario.id; // viene del token
+
+    const id_usuario = req.usuario.id; 
     const [ventaResult] = await conn.query(
       'INSERT INTO ventas (id_usuario, id_cliente, total) VALUES (?, ?, ?)',
       [id_usuario, id_cliente, total]
     );
     const id_venta = ventaResult.insertId;
 
-    // 4) Insertar detalle y actualizar stock
+
     for (const det of detalles) {
       await conn.query(
         'INSERT INTO detalle_ventas (id_venta, id_producto, cantidad, subtotal) VALUES (?, ?, ?, ?)',
@@ -292,7 +277,6 @@ app.post('/api/ventas', authMiddleware, async (req, res) => {
   }
 });
 
-// GET venta (factura)
 app.get('/api/ventas/:id', authMiddleware, async (req, res) => {
   const id_venta = req.params.id;
 
@@ -340,8 +324,8 @@ app.get('/api/ventas/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// ------------------- LEVANTAR SERVIDOR ---------------------
+
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor Backend Veterinaria en http://localhost:${PORT}`);
+  console.log(` Servidor Backend Veterinaria en http://localhost:${PORT}`);
 });
