@@ -29,6 +29,7 @@
             <tr>
               <th style="width:50%">Producto</th>
               <th style="width:12%">Cantidad</th>
+              <th style="width:12%">Stock</th>
               <th style="width:12%">Precio</th>
               <th style="width:14%">Subtotal</th>
               <th style="width:12%"></th>
@@ -45,7 +46,11 @@
               </td>
 
               <td>
-                <input class="form-control" type="number" min="1" [(ngModel)]="item.quantity" name="qty{{i}}">
+                <input class="form-control" type="number" min="1" [(ngModel)]="item.quantity" (change)="mostrarStockDisponible(item)" name="qty{{i}}">
+              </td>
+
+              <td>
+                <input class="form-control" readonly type="number" min="1" [(ngModel)]="item.stock" name="stock{{i}}">
               </td>
 
               <td>
