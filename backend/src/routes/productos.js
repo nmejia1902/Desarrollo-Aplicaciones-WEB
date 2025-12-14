@@ -1,10 +1,9 @@
-// src/routes/productos.js
+
 const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 const authMiddleware = require('../middleware/auth');
 
-// GET /api/productos  (lista pública)
 router.get('/', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT id, nombre, precio, stock FROM productos');
@@ -15,7 +14,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// POST /api/productos  (protegido)
 router.post('/', authMiddleware, async (req, res) => {
   try {
     const { nombre, precio, stock } = req.body;

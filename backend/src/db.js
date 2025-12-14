@@ -1,4 +1,4 @@
-// src/db.js
+
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
@@ -16,14 +16,13 @@ const pool = mysql.createPool({
 async function checkConnection() {
   try {
     const conn = await pool.getConnection();
-    console.log('✅ Conexión a MySQL exitosa.');
+    console.log(' Conexión a MySQL exitosa.');
     conn.release();
   } catch (err) {
-    console.error('❌ Error conectando MySQL:', err.message);
+    console.error(' Error conectando MySQL:', err.message);
   }
 }
 
-// Ejecutar chequeo una vez al inicio (opcional)
 checkConnection();
 
 module.exports = pool;
